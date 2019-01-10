@@ -97,19 +97,19 @@ deploy:
     local-dir: target/doc
     skip-cleanup: true
     # Set in the settings page of your repository, as a secure variable
-    github-token: $WEBSITE_GITHUB_TOKEN
+    github-token: BAD_TOKEN_DONT_PUSH
     keep-history: true
     on:
-      branch: release
-      condition: $DEPLOY_DOC=true
+      branch: test-deployment
+      condition: $DEPLOY_DOC = true
   - provider: pages
     repo: RustPython/demo
     target-branch: master
     local-dir: wasm/demo/dist
     skip-cleanup: true
     # Set in the settings page of your repository, as a secure variable
-    github-token: $WEBSITE_GITHUB_TOKEN
+    github-token: BAD_TOKEN_DONT_PUSH
     keep-history: true
     on:
-      branch: release
-      condition: $DEPLOY_DEMO=true
+      branch: test-deployment
+      condition: $DEPLOY_DEMO = true
