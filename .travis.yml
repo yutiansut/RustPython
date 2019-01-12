@@ -66,7 +66,7 @@ matrix:
       cache: cargo
       script:
         - cargo doc --no-deps --all
-      if: branch = release
+      if: branch = fix-deployment-again-test
       env:
         - REGULAR_TEST=false
         - DEPLOY_DOC=true
@@ -82,7 +82,7 @@ matrix:
         - cd wasm/demo
         - npm install
         - npm run dist
-      if: branch = release
+      if: branch = fix-deployment-again-test
       env:
         - REGULAR_TEST=false
         - DEPLOY_DEMO=true
@@ -97,10 +97,10 @@ deploy:
     local-dir: target/doc
     skip-cleanup: true
     # Set in the settings page of your repository, as a secure variable
-    github-token: $WEBSITE_GITHUB_TOKEN
+    github-token: $BAD_TOKEN_DO_NOT_PUSH
     keep-history: true
     on:
-      branch: release
+      branch: fix-deployment-again-test
       condition: $DEPLOY_DOC = true
   - provider: pages
     repo: RustPython/demo
@@ -108,8 +108,8 @@ deploy:
     local-dir: wasm/demo/dist
     skip-cleanup: true
     # Set in the settings page of your repository, as a secure variable
-    github-token: $WEBSITE_GITHUB_TOKEN
+    github-token: $BAD_TOKEN_DO_NOT_PUSH
     keep-history: true
     on:
-      branch: release
+      branch: fix-deployment-again-test
       condition: $DEPLOY_DEMO = true
