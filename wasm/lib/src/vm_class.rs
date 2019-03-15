@@ -11,7 +11,7 @@ use rustpython_vm::{
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::{Rc, Weak};
-use wasm_bindgen::{prelude::*, JsCast};
+use wasm_bindgen::prelude::*;
 
 pub trait HeldRcInner {}
 

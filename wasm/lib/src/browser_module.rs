@@ -158,9 +158,8 @@ pub struct PyPromise {
 }
 
 impl PyValue for PyPromise {
-    fn class(_vm: &mut VirtualMachine) -> PyObjectRef {
-        // TODO
-        unimplemented!()
+    fn class(vm: &mut VirtualMachine) -> PyObjectRef {
+        vm.class("browser", "Promise")
     }
 }
 

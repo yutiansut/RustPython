@@ -119,9 +119,8 @@ pub struct Socket {
 }
 
 impl PyValue for Socket {
-    fn class(_vm: &mut VirtualMachine) -> PyObjectRef {
-        // TODO
-        unimplemented!()
+    fn class(vm: &mut VirtualMachine) -> PyObjectRef {
+        vm.class("socket", "socket")
     }
 }
 
@@ -442,7 +441,7 @@ pub fn make_module(ctx: &PyContext) -> PyObjectRef {
     py_module!(ctx, "socket", {
         "AF_INET" => ctx.new_int(AddressFamily::Inet as i32),
         "SOCK_STREAM" => ctx.new_int(SocketKind::Stream as i32),
-         "SOCK_DGRAM" => ctx.new_int(SocketKind::Dgram as i32),
-         "socket" => socket.clone(),
+        "SOCK_DGRAM" => ctx.new_int(SocketKind::Dgram as i32),
+        "socket" => socket.clone(),
     })
 }
