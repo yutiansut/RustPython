@@ -1,7 +1,9 @@
 use super::rustpython_path_attr;
 use proc_macro2::{Span, TokenStream as TokenStream2};
 use quote::quote;
-use syn::{Attribute, AttributeArgs, Ident, ImplItem, Item, Lit, Meta, MethodSig, NestedMeta};
+use syn::{
+    Attribute, AttributeArgs, Ident, ImplItem, Item, Lit, Meta, MethodSig, NestedMeta, TraitItem,
+};
 
 enum MethodKind {
     Method,
@@ -89,27 +91,7 @@ impl Method {
     }
 }
 
-pub fn impl_pyimpl(attr: AttributeArgs, item: Item) -> TokenStream2 {
-    let mut imp = if let Item::Impl(imp) = item {
-        imp
-    } else {
-        return quote!(#item);
-    };
-
-    let rp_path = rustpython_path_attr(&attr);
-
-    let methods = imp
-        .items
-        .iter_mut()
-        .filter_map(|item| {
-            if let ImplItem::Method(meth) = item {
-                Method::from_syn(&mut meth.attrs, &meth.sig)
-            } else {
-                None
-            }
-        })
-        .collect::<Vec<_>>();
-    let ty = &imp.self_ty;
+fn get_pyimpl_impl(rp_path: &syn::Path, methods: &[Method]) -> TokenStream2 {
     let methods = methods.iter().map(
         |Method {
              py_name,
@@ -122,17 +104,66 @@ pub fn impl_pyimpl(attr: AttributeArgs, item: Item) -> TokenStream2 {
             }
         },
     );
-
     quote! {
-        #imp
-        impl #rp_path::pyobject::PyClassImpl for #ty {
-            fn impl_extend_class(
-                ctx: &#rp_path::pyobject::PyContext,
-                class: &#rp_path::obj::objtype::PyClassRef,
-            ) {
-                #(#methods)*
+        fn impl_extend_class(
+            ctx: &#rp_path::pyobject::PyContext,
+            class: &#rp_path::obj::objtype::PyClassRef,
+        ) {
+            #(#methods)*
+        }
+    }
+}
+
+pub fn impl_pyimpl(attr: AttributeArgs, item: Item) -> TokenStream2 {
+    let rp_path = rustpython_path_attr(&attr);
+    let pyclassimpl_path = quote!(#rp_path::pyobject::PyClassImpl);
+    match item {
+        Item::Impl(mut imp) => {
+            let methods = imp
+                .items
+                .iter_mut()
+                .filter_map(|item| {
+                    if let ImplItem::Method(meth) = item {
+                        Method::from_syn(&mut meth.attrs, &meth.sig)
+                    } else {
+                        None
+                    }
+                })
+                .collect::<Vec<_>>();
+
+            let pyimpl_impl = get_pyimpl_impl(&rp_path, &methods);
+            let ty = &imp.self_ty;
+
+            quote! {
+                #imp
+                impl #pyclassimpl_path for #ty {
+                    #pyimpl_impl
+                }
             }
         }
+        Item::Trait(mut trai) => {
+            let methods = trai
+                .items
+                .iter_mut()
+                .filter_map(|item| {
+                    if let TraitItem::Method(meth) = item {
+                        Method::from_syn(&mut meth.attrs, &meth.sig)
+                    } else {
+                        None
+                    }
+                })
+                .collect::<Vec<_>>();
+
+            let pyimpl_impl = get_pyimpl_impl(&rp_path, &methods);
+            let ty = &trai.ident;
+
+            quote! {
+                impl<T: #ty> #pyclassimpl_path for T {
+                    #pyimpl_impl
+                }
+            }
+        }
+        _ => panic!("#[pyimpl] can only be applied to impl blocks and trait definitions"),
     }
 }
 
