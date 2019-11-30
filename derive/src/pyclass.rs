@@ -441,7 +441,7 @@ pub fn impl_pystruct_sequence(attr: AttributeArgs, item: Item) -> Result<TokenSt
                     #field_name_str,
                     ::rustpython_vm::obj::objproperty::PropertyBuilder::new(ctx)
                         .add_getter(|zelf: &::rustpython_vm::obj::objtuple::PyTuple,
-                                     _vm: &::rustpython_vm::vm::VirtualMachine|
+                                     _vm: &::rustpython_vm::VirtualMachine|
                                      zelf.fast_getitem(#idx))
                         .create(),
                 );
@@ -459,7 +459,7 @@ pub fn impl_pystruct_sequence(attr: AttributeArgs, item: Item) -> Result<TokenSt
         #class_def
         impl #ty {
             pub fn into_struct_sequence(&self,
-                vm: &::rustpython_vm::vm::VirtualMachine,
+                vm: &::rustpython_vm::VirtualMachine,
                 cls: ::rustpython_vm::obj::objtype::PyClassRef,
             ) -> ::rustpython_vm::pyobject::PyResult<::rustpython_vm::obj::objtuple::PyTupleRef> {
                 let tuple = ::rustpython_vm::obj::objtuple::PyTuple::from(
@@ -477,6 +477,7 @@ pub fn impl_pystruct_sequence(attr: AttributeArgs, item: Item) -> Result<TokenSt
                 class: &::rustpython_vm::obj::objtype::PyClassRef,
             ) {
                 #(#properties)*
+                class.set_str_attr("__iter__", ctx.new_rustfunc(::rustpython_vm::obj::objiter::seq_iter_method));
             }
 
             fn make_class(
